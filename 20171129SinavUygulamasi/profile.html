@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="content/jquery-1.10.2.min.js"></script>
+    <script src="content/jquery.cookie.js"></script>
+    <script>
+        if (!$.cookie("kullanici_id")) {
+            location.href = "login.html";
+        }
+
+        var id = parseInt($.cookie("kullanici_id"));
+    </script>
+</head>
+<body>
+    <div id="container">
+        <div id="kisi">
+            <div id="baslik">
+                <h1></h1>
+            </div>
+            <div id="bilgi">
+                <div id="genel">
+                    <img width="100" height="100"/>
+                    <div>
+                        <span>Doğum Tarihi</span><span id="d-tarihi"></span>
+                        <span>Okul</span><span id="okul"></span>
+                        <span>Fakülte</span><span id="fakulte"></span>
+                    </div>
+                    <div id="ozgecmis">
+                        <h2 id="ozgecmis-baslik">Özgeçmiş</h2>
+                        <p id="ozgecmis-detay"></p>
+                    </div>
+                    <div id="konular">
+                        <h2 id="konular-baslik">Konular</h2>
+                        <ul id="konular-detay"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: '/kullanicilar.js',
+                method: 'get',
+                success: function (data) {
+                    var kullanicilar = JSON.parse(data);
+
+                    var kullanici = kullanicilar[id];
+
+                    $('#baslik h1').text(kullanici.isim + ' ' + kullanici.soyisim);
+                    $('#genel img').attr("src", kullanici.profil_resmi);
+                    $('#d-tarihi').text(kullanici.d_tarihi);
+                    $('#okul').text(kullanici.mezun_oldgu_okul);
+                    $('#fakulte').text(kullanici.fakulte);
+                    $('#ozgecmis-detay').text(kullanici.ozgecmis);
+
+                    for (var i = 0; i < kullanici.konular.length; i++) {
+                        var li = $("<li>" + kullanici.konular[i] + "</li>");
+                        $('#konular-detay').append(li);
+                    }
+                }
+            });
+
+            $('#ozgecmis-baslik').on('click', function () {
+                $('#ozgecmis-detay').slideToggle(1000);
+            });
+
+            $('#konular-baslik').on('click', function () {
+                $('#konular-detay').slideToggle(1000);
+            });
+        });
+        
+        
+    </script>
+</body>
+</html>

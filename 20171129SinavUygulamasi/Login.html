@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        #mesaj_alani {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="login-panel">
+            <div>
+                <label for="k_adi">Kullanıcı Adı</label>
+                <input type="text" name="k_adi" id="k_adi" />
+            </div>
+            <div>
+                <label for="sifre">Şifre</label>
+                <input type="password" name="sifre" id="sifre" />
+            </div>
+            <div>
+                <button id="giris">GİRİŞ YAP</button>
+            </div>
+        </div>
+        <div id="mesaj_alani"></div>
+    </div>
+    <script src="content/jquery-1.10.2.min.js"></script>
+    <script src="content/jquery.cookie.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            if ($.cookie("girisi_engelle")) {
+                girisiEngelle();
+            } else {
+
+
+                $('#giris').on('click', function () {
+                    var kullanici_adi = $('#k_adi').val();
+                    var sifre = $('#sifre').val();
+
+                    $.ajax({
+                        url: '/kullanicilar.js',
+                        method: 'get',
+                        success: function (data) {
+                            var kullanicilar = JSON.parse(data);
+
+                            for (var i = 0; i < kullanicilar.length; i++) {
+                                if (kullanicilar[i].kullanici_adi != kullanici_adi) {
+                                    continue;
+                                }
+
+                                if (kullanicilar[i].sifre != sifre) {
+                                    continue;
+                                }
+
+                                $.removeCookie("hatali_giris_sayisi");
+                                $.cookie("kullanici_id", i, { expires: 1 });
+                                location.href = "profile.html";
+                                break;
+                            }
+
+                            var hataliGirisSayisi = 1;
+
+                            if ($.cookie("hatali_giris_sayisi")) {
+                                hataliGirisSayisi = parseInt($.cookie("hatali_giris_sayisi"));
+                                hataliGirisSayisi++;
+                            }
+
+                            $.cookie("hatali_giris_sayisi", hataliGirisSayisi, { expires: 1 });
+
+                            var mesaj = "Kullanıcı adı veya parolanız hatalı." + hataliGirisSayisi + " defa hatalı giriş yaptınız.";
+
+                            if (hataliGirisSayisi > 4) {
+                                $.cookie("girisi_engelle", "ty", { expires: dakikayiGuneCevir(5) });
+                                girisiEngelle();
+                                return;
+                            }
+
+                            $('#mesaj_alani').html(mesaj);
+                        }
+                    });
+                });
+            }
+        });
+
+        function girisiEngelle() {
+            $("#login-panel").hide();
+            $('#mesaj_alani').text("Beş dakika boyunca engellendiniz.");
+        }
+
+        function dakikayiGuneCevir(dakika) {
+            return dakika / (24 * 60);
+        }
+    </script>
+</body>
+</html>
